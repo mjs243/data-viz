@@ -98,12 +98,18 @@ async def stream_data():
 
     conn.close()
 
+def start_background_tasks():
+    """Start background tasks"""
+    asyncio.create_task(download_all_csvs())
+    asyncio.create_task(stream_data())
+
 @app.route('/')
 def index():
     return "Welcome to the Synchrotron Data API!"
 
 if __name__ == "__main__":
     create_db()
-    socketio.start_background_task(download_all_csvs)
-    socketio.start_background_task(stream_data)
-    socketio.run(app, host='0.0.0.0', port=3000)
+    socketio.on_event("connect", start_background_tasks)
+    # socketio.start_background_task(download_all_csvs)
+    # socketio.start_background_task(stream_data)
+    socketio.run(app, host='0.0.0.0', port=3000, allow_unsafe_werkzeug=True)
